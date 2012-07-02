@@ -10,8 +10,8 @@ gameLoop screen = do
             putStrLn inputError
             getLine
             gameLoop screen
-        Right Nothing -> return ()
         Right (Just newScreen) -> gameLoop newScreen
+        Right Nothing -> return ()
 
 main :: IO ()
 main = do
