@@ -9,6 +9,7 @@ import Control.Monad
 import qualified Data.List as List
 import qualified Data.Map as Map
 import System.Console.ANSI
+import Paths_khaland    -- this is created by Cabal
 
 data Action = Action { getDescription :: String, getNextScreen :: Maybe Screen }
 
@@ -31,7 +32,8 @@ putScreen screen = do
 
 loadGame :: IO Screen
 loadGame = do
-    asciiLogo <- readFile "res/logo.txt"
+    asciiLogoFile <- getDataFileName "logo.txt"
+    asciiLogo <- readFile asciiLogoFile
     let startNewGameScreen = Screen "This will be the start screen." $
                                     Map.fromList [('q', Action "Quit" Nothing)]
     let logoScreen = Screen (asciiLogo ++ "\n\ta text-based adventure game by siliconbrain") $
