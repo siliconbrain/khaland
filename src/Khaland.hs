@@ -11,21 +11,27 @@ readDataFile relativeFileName = do
     absoluteFileName <- getDataFileName relativeFileName
     readFile absoluteFileName
 
-type PreGameAction = IO ()
+playIntro :: [String] -> IO ()
+playIntro [] = return ()
+playIntro (x:xs) = do
+    clearScreen
+    putStrLn x
+    threadDelay 1000000
+    playIntro xs
 
-load :: IO PreGameAction
+putWelcomeScreen :: String -> IO ()
+putWelcomeScreen text = do
+    clearScreen
+    putStrLn text
+    getLine
+    return ()
+
 load = do
     khalandLogo <- readDataFile "logo.txt"
-    return $ do
-        clearScreen
-        putStrLn $ khalandLogo ++ "\n\ta text-based adventure game by siliconbrain\n\nPress ENTER to continue"
-        getLine
-        return ()
+    playIntro ["\tsiliconbrain\n\t\tpresents"]
+    putWelcomeScreen $ khalandLogo ++ "\n\ta text-based adventure game by siliconbrain\n\nPress ENTER to continue"
 
 main :: IO ()
 main = do
-    preGameAction <- load
-    preGameAction
-    --(gameState, cont) <- preGameAction
-    --runCont cont (`runState` gameState)
+    load
     putStrLn "Thanks for playing!"

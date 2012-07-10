@@ -1,11 +1,22 @@
 module Game (
     GameState,
-    Gender(..),
 ) where
 
-data Gender = Male
-            | Female
+import Character
+import Control.Monad.State
+import qualified Distance as Dst
+import qualified Speed as Spd
+import qualified Time as Tm
 
 data GameState = GameState {
-                   gender :: Gender
+                     player :: Player,
+                     currentTime :: Tm.Time Float
                  }
+
+travel :: (RealFrac a) => Dst.Distance a -> State GameState ()
+travel dist = do
+    gameState <- get
+    let playerChar = player gameState
+    put $ GameState playerChar ((currentTime gameState) `Tm.offset` (Spd.getTime dist (travelSpeed playerChar)))
+
+
