@@ -13,7 +13,6 @@ data GameState = GameState {
                      currentTime :: Tm.Time Float
                  }
 
-travel :: (RealFrac a) => Dst.Distance a -> State GameState ()
 travel dist = do
     gameState <- get
     let playerChar = player gameState

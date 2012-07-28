@@ -1,0 +1,12 @@
+1000000
+This is an intro screen
+with a 1 sec wait time
+
+2000000
+This one has a 2 sec wait
+ 
+time and an almost empty line
+
+
+This one needs you to press an ENTER
+to continue on with the show

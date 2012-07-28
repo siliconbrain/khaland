@@ -11,27 +11,57 @@ readDataFile relativeFileName = do
     absoluteFileName <- getDataFileName relativeFileName
     readFile absoluteFileName
 
-playIntro :: [String] -> IO ()
-playIntro [] = return ()
-playIntro (x:xs) = do
-    clearScreen
-    putStrLn x
-    threadDelay 1000000
-    playIntro xs
+showIntroScreen :: [String] -> IO [String]
+showIntroScreen [] = return []
+showIntroScreen (x:xs)
+    | null x = return xs
+    | otherwise = do
+        putStrLn x
+        showIntroScreen xs
 
-putWelcomeScreen :: String -> IO ()
-putWelcomeScreen text = do
-    clearScreen
-    putStrLn text
-    getLine
-    return ()
+playIntroScreens :: [String] -> IO ()
+playIntroScreens [] = return ()
+playIntroScreens (x:xs)
+    | null x = do
+        clearScreen
+        xs' <- showIntroScreen xs
+        -- might have to put a "Press ENTER to continue" text just to clarify the situation
+        getLine
+        playIntroScreens xs'
+    | otherwise = do
+        clearScreen
+        xs' <- showIntroScreen xs
+        threadDelay $ read x
+        playIntroScreens xs'
 
-load = do
-    khalandLogo <- readDataFile "logo.txt"
-    playIntro ["\tsiliconbrain\n\t\tpresents"]
-    putWelcomeScreen $ khalandLogo ++ "\n\ta text-based adventure game by siliconbrain\n\nPress ENTER to continue"
+playIntro :: IO ()
+playIntro = do
+    introData <- readDataFile "intro.txt"
+    playIntroScreens $ lines introData
+
+showMenuScreen :: IO ()
+showMenuScreen = do
+    clearScreen
+    putStrLn "(s) Start new game\n(l) Load existing game\n(q) Quit"
+    input <- getChar
+    case input of
+        's' -> do
+            clearScreen
+            putStrLn "Starting new game..."
+        'l' -> do
+            clearScreen
+            putStrLn "Please select a game to load!"
+            gameNumber <- getLine
+            putStrLn $ "Loading game no. " ++ gameNumber ++ "..."
+        'q' -> clearScreen
+        _ -> do
+            putStrLn "Invalid input"
+            getLine
+            showMenuScreen
 
 main :: IO ()
 main = do
-    load
+    hSetBuffering stdin NoBuffering
+    playIntro
+    showMenuScreen
     putStrLn "Thanks for playing!"
