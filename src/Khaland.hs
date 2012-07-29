@@ -39,25 +39,55 @@ playIntro = do
     introData <- readDataFile "intro.txt"
     playIntroScreens $ lines introData
 
+showLoadGameScreen :: IO ()
+showLoadGameScreen = do
+    savedGames <- getSavedGames
+    clearScreen
+    if null savedGames
+        then do
+            putStrLn "There are no saved games.\nPlease press ENTER to continue!"
+            getLine
+            showMenuScreen
+        else do
+            foldM_ (\i (name,date,file) -> (putStrLn $ "(" ++ (show i) ++ ") " ++ name ++ " - " ++ date) >> return (i + 1)) 0 savedGames
+            putStrLn "Please select a game to load!"
+            processInput savedGames
+    where processInput savedGames = do
+            input <- getLine
+            if null input
+                then do
+                    putStrLn "No game selected.\nPlease type in one of the options above before pressing ENTER!"
+                    processInput savedGames
+                else case reads input of
+                    [(n,_)] -> if n < 0 || n >= length savedGames
+                        then do
+                            putStrLn "Invalid option.\nPlease select one of the options from above!"
+                            processInput savedGames
+                        else let (_,_,file) = savedGames !! n in loadGame file
+                    _ -> do
+                        putStrLn "Invalid option.\nPlease select one of the options from above!"
+                        processInput savedGames
+
 showMenuScreen :: IO ()
 showMenuScreen = do
     clearScreen
-    putStrLn "(s) Start new game\n(l) Load existing game\n(q) Quit"
-    input <- getChar
-    case input of
-        's' -> do
-            clearScreen
-            putStrLn "Starting new game..."
-        'l' -> do
-            clearScreen
-            putStrLn "Please select a game to load!"
-            gameNumber <- getLine
-            putStrLn $ "Loading game no. " ++ gameNumber ++ "..."
-        'q' -> clearScreen
-        _ -> do
-            putStrLn "Invalid input"
-            getLine
-            showMenuScreen
+    -- could show some artwork here
+    putStrLn "(s) Start new game"
+    putStrLn "(l) Load existing game"
+    putStrLn "(q) Quit"
+    processInput
+    where processInput = do
+            input <- getLine
+            case input of
+                [] -> do
+                    putStrLn "No option selected.\nPlease type in one of the options above before pressing ENTER!"
+                    processInput
+                "s" -> startGame
+                "l" -> showLoadGameScreen
+                "q" -> return ()
+                _ -> do
+                    putStrLn "Invalid option selected.\nPlease select one of the options from above!"
+                    processInput
 
 main :: IO ()
 main = do

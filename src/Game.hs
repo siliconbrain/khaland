@@ -1,5 +1,8 @@
 module Game (
     GameState,
+    getSavedGames,
+    startGame,
+    loadGame,
 ) where
 
 import Character
@@ -12,6 +15,17 @@ data GameState = GameState {
                      player :: Player,
                      currentTime :: Tm.Time Float
                  }
+
+getSavedGames :: IO [(String,String,String)]
+getSavedGames = do
+    -- do directory search here
+    return []
+
+startGame :: IO ()
+startGame = putStrLn "Starting new game..."
+
+loadGame :: String -> IO ()
+loadGame file = putStrLn $ "Loading game from " ++ file ++ "..."
 
 travel dist = do
     gameState <- get
