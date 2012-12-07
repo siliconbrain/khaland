@@ -1,6 +1,7 @@
 import Control.Concurrent (threadDelay)
-import Control.Monad.Cont
-import Control.Monad.State
+import Control.Monad (foldM_)
+import Data.Char (toLower)
+import Data.List (isPrefixOf)
 import Game
 import Paths_khaland    -- this is created by Cabal
 import System.Console.ANSI
@@ -39,59 +40,76 @@ playIntro = do
     introData <- readDataFile "intro.txt"
     playIntroScreens $ lines introData
 
+getSavedGames :: IO [String]
+getSavedGames = return [] -- TODO: implement
+
+getSavedGameFilePath :: String -> FilePath
+getSavedGameFilePath savedGame = [] -- TODO: implement
+
+withSavedGame :: String -> (Handle -> IO ()) -> IO ()
+withSavedGame savedGame f = withFile filePath ReadWriteMode f
+    where filePath = getSavedGameFilePath savedGame
+
 showLoadGameScreen :: IO ()
 showLoadGameScreen = do
     savedGames <- getSavedGames
-    clearScreen
     if null savedGames
         then do
-            putStrLn "There are no saved games.\nPlease press ENTER to continue!"
-            getLine
-            showMenuScreen
-        else do
-            foldM_ (\i (name,date,file) -> (putStrLn $ "(" ++ (show i) ++ ") " ++ name ++ " - " ++ date) >> return (i + 1)) 0 savedGames
-            putStrLn "Please select a game to load!"
+            clearScreen
+            putStrLn "You have no saved games yet. Would you like to start a new game?"
+            input <- getLine
+            case map toLower input of
+                "yes" -> startNewGame
+                _ -> showMenuScreen
+        else selectSavedGame savedGames
+    where selectSavedGame savedGames = do
+            clearScreen
+            putStrLn "Your saved games are:"
+            foldM_ (\ _ savedGame -> putStrLn savedGame) () savedGames
+            putStrLn "Please select a saved game to load!"
             processInput savedGames
-    where processInput savedGames = do
+          processInput savedGames = do
             input <- getLine
             if null input
                 then do
-                    putStrLn "No game selected.\nPlease type in one of the options above before pressing ENTER!"
-                    processInput savedGames
-                else case reads input of
-                    [(n,_)] -> if n < 0 || n >= length savedGames
-                        then do
-                            putStrLn "Invalid option.\nPlease select one of the options from above!"
+                    putStrLn "You didn't select anything. Would you like to start a new game?"
+                    input' <- getLine
+                    case map toLower input' of
+                        "yes" -> startNewGame
+                        _ -> selectSavedGame savedGames
+                else do
+                    case [ savedGame | savedGame <- savedGames, isPrefixOf input savedGame] of
+                        [] -> do
+                            putStrLn "You've probably misspelled something. Please try again!"
                             processInput savedGames
-                        else let (_,_,file) = savedGames !! n in loadGame file
-                    _ -> do
-                        putStrLn "Invalid option.\nPlease select one of the options from above!"
-                        processInput savedGames
+                        [selectedGame] -> withSavedGame selectedGame continueGame
+                        ambiguousSelections -> do
+                            putStrLn "You weren't specific enough. Which would you like to continue?"
+                            processInput savedGames
 
 showMenuScreen :: IO ()
 showMenuScreen = do
     clearScreen
     -- could show some artwork here
-    putStrLn "(s) Start new game"
-    putStrLn "(l) Load existing game"
-    putStrLn "(q) Quit"
+    putStrLn "Start new game [start]"
+    putStrLn "Load existing game [load]"
+    putStrLn "Quit [quit]"
     processInput
     where processInput = do
             input <- getLine
-            case input of
+            case map toLower input of
                 [] -> do
-                    putStrLn "No option selected.\nPlease type in one of the options above before pressing ENTER!"
+                    putStrLn "Silence is not the answer. Please tell me what you'd like to do!"
                     processInput
-                "s" -> startGame
-                "l" -> showLoadGameScreen
-                "q" -> return ()
+                "start" -> startNewGame
+                "load" -> showLoadGameScreen
+                "quit" -> return ()
                 _ -> do
-                    putStrLn "Invalid option selected.\nPlease select one of the options from above!"
+                    putStrLn "I don't know how to do that. Try to select from the options above!"
                     processInput
 
 main :: IO ()
 main = do
-    hSetBuffering stdin NoBuffering
     playIntro
     showMenuScreen
-    putStrLn "Thanks for playing!"
+    putStrLn "\n========\nIn memoriam Szalontai Andor\n========\n\nThanks for playing!"
