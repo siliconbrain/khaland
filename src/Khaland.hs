@@ -4,6 +4,7 @@ import Data.Char (toLower)
 import Data.List (isPrefixOf)
 import Game
 import Paths_khaland    -- this is created by Cabal
+import Savefile
 import System.Console.ANSI
 import System.IO
 
@@ -40,16 +41,6 @@ playIntro = do
     introData <- readDataFile "intro.txt"
     playIntroScreens $ lines introData
 
-getSavedGames :: IO [String]
-getSavedGames = return [] -- TODO: implement
-
-getSavedGameFilePath :: String -> FilePath
-getSavedGameFilePath savedGame = [] -- TODO: implement
-
-withSavedGame :: String -> (Handle -> IO ()) -> IO ()
-withSavedGame savedGame f = withFile filePath ReadWriteMode f
-    where filePath = getSavedGameFilePath savedGame
-
 showLoadGameScreen :: IO ()
 showLoadGameScreen = do
     savedGames <- getSavedGames
@@ -65,19 +56,23 @@ showLoadGameScreen = do
     where selectSavedGame savedGames = do
             clearScreen
             putStrLn "Your saved games are:"
+            putStrLn "========================"
             foldM_ (\ _ savedGame -> putStrLn savedGame) () savedGames
+            putStrLn "========================"
             putStrLn "Please select a saved game to load!"
             processInput savedGames
           processInput savedGames = do
             input <- getLine
-            if null input
-                then do
+            case input of
+                [] -> do
                     putStrLn "You didn't select anything. Would you like to start a new game?"
                     input' <- getLine
                     case map toLower input' of
                         "yes" -> startNewGame
+                        "quit" -> return ()
                         _ -> selectSavedGame savedGames
-                else do
+                "quit" -> return ()
+                otherwise -> do
                     case [ savedGame | savedGame <- savedGames, isPrefixOf input savedGame] of
                         [] -> do
                             putStrLn "You've probably misspelled something. Please try again!"
