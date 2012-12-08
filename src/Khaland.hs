@@ -57,7 +57,7 @@ showLoadGameScreen = do
             clearScreen
             putStrLn "Your saved games are:"
             putStrLn "========================"
-            foldM_ (\ _ savedGame -> putStrLn savedGame) () savedGames
+            foldM_ (\ _ -> putStrLn) () savedGames
             putStrLn "========================"
             putStrLn "Please select a saved game to load!"
             processInput savedGames
@@ -107,4 +107,10 @@ main :: IO ()
 main = do
     playIntro
     showMenuScreen
-    putStrLn "\n========\nIn memoriam Szalontai Andor\n========\n\nThanks for playing!"
+    -- should print some goodbye image here
+    putStrLn ""
+    putStrLn "################################"
+    putStrLn "# In memoriam Szalontai Andor. #"
+    putStrLn "################################"
+    putStrLn ""
+    putStrLn "Thanks for playing!"
