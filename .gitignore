@@ -1,3 +1,5 @@
 *.swp
 dist/
 tags
+*.sublime-workspace
+*.sublime-project
