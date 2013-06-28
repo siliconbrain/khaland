@@ -8,5 +8,5 @@ This one has a 2 sec wait
 time and an almost empty line
 
 
-This one needs you to press an ENTER
+This one needs you to press ENTER
 to continue on with the show

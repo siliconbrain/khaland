@@ -1,7 +1,8 @@
 {-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
-module Game (
-    startNewGame,
-    continueGame,
+module Khaland.Game (
+    createNewGame,
+    loadSavedGame,
+    playGame,
 ) where
 
 --import Character
@@ -14,6 +15,13 @@ import Savefile
 import System.Console.ANSI
 import System.IO
 import System.Random
+
+import Khaland.Game.State
+import Khaland.Interactive
+
+createNewGame :: IO GameState
+
+playGame :: GameState -> IO ()
 
 processInputWith :: (String -> IO b) -> IO b
 processInputWith processor = do
